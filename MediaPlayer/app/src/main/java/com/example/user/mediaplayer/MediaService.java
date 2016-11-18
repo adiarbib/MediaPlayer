@@ -11,29 +11,30 @@ import android.support.annotation.Nullable;
  */
 public class MediaService extends Service {
 
-    private MediaPlayer mediaPlayer;
-
+    public MediaPlayer mediaPlayer;
     public final String ACTION_PLAY = "ACTION_PLAY";
-    public final String ACTION_PAUSE="ACTION_PAUSE";
+    public final String ACTION_PAUSE = "ACTION_PAUSE";
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent.getAction();
-        int resID= intent.getIntExtra("songID",0);
-        if(resID==0)
-        {
-            throw new RuntimeException();
-        }
-        else {
+        int resID = intent.getIntExtra("songID", 0);
             switch (action) {
                 case ACTION_PLAY:
-                    mediaPlayer = MediaPlayer.create(this, resID);
-                    mediaPlayer.start();
-                break;
+                    if (resID == 0) {
+                        throw new RuntimeException();}
+                    else
+                    {
+                        PlaySong(resID);
+                    }
+                    break;
 
-                case
-            }
+                case ACTION_PAUSE:
+                    if(mediaPlayer.isPlaying())
+                        mediaPlayer.pause();
+                    break;
         }
+        return super.onStartCommand(intent, flags, startId);
     }
 
     @Nullable
@@ -45,10 +46,23 @@ public class MediaService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        mediaPlayer=new MediaPlayer();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if(mediaPlayer.isPlaying())
+            mediaPlayer.stop();
+        mediaPlayer.release();
+        mediaPlayer=null;
+    }
+
+    void PlaySong (int resID)
+    {
+        if(mediaPlayer.isPlaying())
+            mediaPlayer.stop();
+        mediaPlayer = MediaPlayer.create(this, resID);
+        mediaPlayer.start();
     }
 }
