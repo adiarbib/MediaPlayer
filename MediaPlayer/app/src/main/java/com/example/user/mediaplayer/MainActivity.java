@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.provider.SyncStateContract;
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
     ImageButton forawrd;
     ImageButton backward;
     int currentSongPosition=0;
+    MyBroadcastReceiver myBroadcastReceiver;
+    IntentFilter intentFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +57,13 @@ public class MainActivity extends AppCompatActivity {
         playOrPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (Integer.parseInt(playOrPause.getTag().toString()) == R.drawable.play) {
+                isPlayingMethod();
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException();
+                }
+                if (!myBroadcastReceiver.isPlaying) {
                     resumeSong();
                 } else {
                     pauseSong();
@@ -97,15 +106,27 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //TODO: add notification here
 
+    }
 
+    private void isPlayingMethod() {
+        Intent intent=new Intent(MainActivity.this,MediaService.class);
+        intent.setAction(MediaService.ACTION_CHECK_IF_PLAYING);
+        startService(intent);
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        myBroadcastReceiver= new MyBroadcastReceiver();
+        intentFilter=new IntentFilter();
+        intentFilter.addAction(MediaService.ACTION_CHECK_IF_PLAYING);
+        registerReceiver(myBroadcastReceiver,intentFilter);
     }
 
     private void pauseSong() {
         Intent intent = new Intent(MainActivity.this, MediaService.class);
-        intent.setAction("ACTION_PAUSE");
+        intent.setAction(MediaService.ACTION_PAUSE);
         startService(intent);
         playOrPause.setImageResource(R.drawable.play);
         playOrPause.setTag(R.drawable.play);
@@ -115,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
         currentSongPosition=position;
         Song song=songsAdapter.getItem(position);
         Intent intent = new Intent(MainActivity.this, MediaService.class);
-        intent.setAction("ACTION_PLAY");
+        intent.setAction(MediaService.ACTION_PLAY);
         intent.putExtra("songID",song.getResId());
         startService(intent);
         playOrPause.setImageResource(R.drawable.pause);
@@ -127,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
         currentSongPosition=position;
         Song song=songsAdapter.getItem(position);
         Intent intent = new Intent(MainActivity.this, MediaService.class);
-        intent.setAction("ACTION_SKIP_PREV");
+        intent.setAction(MediaService.ACTION_SKIP_PREV);
         intent.putExtra("songID",song.getResId());
         startService(intent);
         playOrPause.setImageResource(R.drawable.pause);
@@ -139,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
         currentSongPosition=position;
         Song song=songsAdapter.getItem(position);
         Intent intent = new Intent(MainActivity.this, MediaService.class);
-        intent.setAction("ACTION_SKIP_NEXT");
+        intent.setAction(MediaService.ACTION_SKIP_NEXT);
         intent.putExtra("songID",song.getResId());
         startService(intent);
         playOrPause.setImageResource(R.drawable.pause);
@@ -156,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
     private void stopSong()
     {
         Intent intent = new Intent(MainActivity.this, MediaService.class);
-        intent.setAction("ACTION_STOP");
+        intent.setAction(MediaService.ACTION_STOP);
         startService(intent);
         playOrPause.setImageResource(R.drawable.play);
         playOrPause.setTag(R.drawable.play);
@@ -165,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
     private void resumeSong()
     {
         Intent intent = new Intent(MainActivity.this, MediaService.class);
-        intent.setAction("ACTION_RESUME");
+        intent.setAction(MediaService.ACTION_RESUME);
         startService(intent);
         playOrPause.setImageResource(R.drawable.pause);
         playOrPause.setTag(R.drawable.pause);

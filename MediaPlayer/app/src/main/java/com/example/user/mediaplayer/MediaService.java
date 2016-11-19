@@ -4,7 +4,6 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -12,12 +11,7 @@ import android.media.MediaPlayer;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
-import android.util.Log;
 
-/**
- * Created by User on 17/11/2016.
- */
 public class MediaService extends Service {
 
     public MediaPlayer mediaPlayer;
@@ -27,6 +21,7 @@ public class MediaService extends Service {
     public final static String ACTION_SKIP_PREV="ACTION_SKIP_PREV";
     public final static String ACTION_RESUME="ACTION_RESUME";
     public final static String ACTION_SKIP_NEXT="ACTION_SKIP_NEXT";
+    public final static String ACTION_CHECK_IF_PLAYING="ACTION_CHECK_IF_PLAYING";
     public final static int NOTIFICATION_ID=1;
     public static boolean isPlaying=false;
 
@@ -36,6 +31,15 @@ public class MediaService extends Service {
         String action = intent.getAction();
         int resID = intent.getIntExtra("songID", 0);
             switch (action) {
+
+                case ACTION_CHECK_IF_PLAYING:
+                    Intent intentBroadcastIsPlaying=new Intent();
+                    intentBroadcastIsPlaying.setAction(ACTION_CHECK_IF_PLAYING);
+                    intentBroadcastIsPlaying.putExtra("isPlaying",mediaPlayer.isPlaying());
+                    sendBroadcast(intentBroadcastIsPlaying);
+                    break;
+
+
                 case ACTION_PLAY:
                     if (resID == 0) {
                         throw new RuntimeException();}
