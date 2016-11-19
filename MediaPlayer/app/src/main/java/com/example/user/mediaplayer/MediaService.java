@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.util.Log;
 
 /**
  * Created by User on 17/11/2016.
@@ -31,7 +32,7 @@ public class MediaService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
+        initNotification(intent);
         String action = intent.getAction();
         int resID = intent.getIntExtra("songID", 0);
             switch (action) {
@@ -79,13 +80,15 @@ public class MediaService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private void initNotification() {
+    private void initNotification(Intent intent) {
 
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingNotificationIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
         Intent previousIntent = new Intent(this, MediaService.class);
         previousIntent.setAction(ACTION_SKIP_PREV);
+        //Log.d("song id",intent.getIntExtra("songID", 0));
+        previousIntent.putExtra("songID",intent.getIntExtra("songID", 0));
         PendingIntent pendingPreviousIntent = PendingIntent.getService(this, 0, previousIntent, 0);
 
         Intent playIntent = new Intent(this, MediaService.class);
@@ -101,7 +104,7 @@ public class MediaService extends Service {
         Notification notification = new NotificationCompat.Builder(this)
                 .setContentTitle("Music Player")
                 .setContentText("Music")
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.icon)
                 .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
                 .setContentIntent(pendingNotificationIntent)
                 .setOngoing(true)
@@ -123,7 +126,7 @@ public class MediaService extends Service {
     public void onCreate() {
         super.onCreate();
         mediaPlayer=new MediaPlayer();
-        initNotification();
+
     }
 
     @Override
