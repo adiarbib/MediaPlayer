@@ -9,7 +9,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
-
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,14 +19,17 @@ public class MainActivity extends AppCompatActivity {
     ImageButton playOrPause;
     ImageButton forawrd;
     ImageButton backward;
-    int currentSongPosition=0;
-    MyBroadcastReceiver myBroadcastReceiver;
-    IntentFilter intentFilter;
+    int currentSongPosition;
+    //MyBroadcastReceiver myBroadcastReceiver;
+    //IntentFilter intentFilter;
+    public static String POSITION_SONG ="positionSong";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        currentSongPosition=0;
 
         songsList = (ListView) findViewById(R.id.songsList);
         playOrPause = (ImageButton) findViewById(R.id.playOrPause);
@@ -49,17 +51,6 @@ public class MainActivity extends AppCompatActivity {
         playOrPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /*isPlayingMethod();
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException();
-                }
-                if (!myBroadcastReceiver.isPlaying) {
-                    resumeSong();
-                } else {
-                    pauseSong();
-                }*/
                 if(Integer.parseInt(playOrPause.getTag().toString()) == R.drawable.pause)
                     pauseSong();
                 else
@@ -78,45 +69,24 @@ public class MainActivity extends AppCompatActivity {
         forawrd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (Integer.parseInt(playOrPause.getTag().toString()) == R.drawable.play || currentSongPosition < 0 || currentSongPosition >= songsList.getCount() - 1) {
-                    playNext(0);
-                } else {
-                    currentSongPosition++;
-                    playNext(currentSongPosition);
-                }
+                playNext();
             }
         });
 
         backward.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (Integer.parseInt(playOrPause.getTag().toString()) == R.drawable.play || currentSongPosition < 0 || currentSongPosition > songsList.getCount() - 1) {
-                    playPrevious(0);
-                } else if (currentSongPosition == 0) {
-                    playPrevious(songsList.getCount() - 1);
-                } else {
-                    currentSongPosition--;
-                    playPrevious(currentSongPosition);
-                }
+                playPrevious();
             }
         });
 
 
     }
 
-    private void isPlayingMethod() {
-        Intent intent=new Intent(MainActivity.this,MediaService.class);
-        intent.setAction(MediaService.ACTION_CHECK_IF_PLAYING);
-        startService(intent);
-    }
 
     @Override
     protected void onStart() {
         super.onStart();
-        myBroadcastReceiver= new MyBroadcastReceiver();
-        intentFilter=new IntentFilter();
-        intentFilter.addAction(MediaService.ACTION_CHECK_IF_PLAYING);
-        registerReceiver(myBroadcastReceiver,intentFilter);
     }
 
     private void pauseSong() {
@@ -128,35 +98,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void playSong(int position) {
-        currentSongPosition=position;
-        Song song=songsAdapter.getItem(position);
         Intent intent = new Intent(MainActivity.this, MediaService.class);
         intent.setAction(MediaService.ACTION_PLAY);
-        intent.putExtra("songID",song.getResId());
+        intent.putExtra(POSITION_SONG,position);
         startService(intent);
         playOrPause.setImageResource(R.drawable.pause);
         playOrPause.setTag(R.drawable.pause);
     }
 
-    private void playPrevious(int position)
-    {
-        currentSongPosition=position;
-        Song song=songsAdapter.getItem(position);
+    private void playPrevious() {
         Intent intent = new Intent(MainActivity.this, MediaService.class);
         intent.setAction(MediaService.ACTION_SKIP_PREV);
-        intent.putExtra("songID",song.getResId());
         startService(intent);
         playOrPause.setImageResource(R.drawable.pause);
         playOrPause.setTag(R.drawable.pause);
     }
 
-    private void playNext(int position)
-    {
-        currentSongPosition=position;
-        Song song=songsAdapter.getItem(position);
+    private void playNext() {
         Intent intent = new Intent(MainActivity.this, MediaService.class);
         intent.setAction(MediaService.ACTION_SKIP_NEXT);
-        intent.putExtra("songID",song.getResId());
         startService(intent);
         playOrPause.setImageResource(R.drawable.pause);
         playOrPause.setTag(R.drawable.pause);
@@ -169,8 +129,7 @@ public class MainActivity extends AppCompatActivity {
         songsAdapter.add(new Song("Hysteria",R.raw.muse_hysteria));
     }
 
-    private void stopSong()
-    {
+    private void stopSong() {
         Intent intent = new Intent(MainActivity.this, MediaService.class);
         intent.setAction(MediaService.ACTION_STOP);
         startService(intent);
@@ -178,8 +137,7 @@ public class MainActivity extends AppCompatActivity {
         playOrPause.setTag(R.drawable.play);
     }
 
-    private void resumeSong()
-    {
+    private void resumeSong() {
         Intent intent = new Intent(MainActivity.this, MediaService.class);
         intent.setAction(MediaService.ACTION_RESUME);
         startService(intent);
@@ -187,6 +145,8 @@ public class MainActivity extends AppCompatActivity {
         playOrPause.setTag(R.drawable.pause);
 
     }
+
+    //TODO: change list to strings only.
 
 
 

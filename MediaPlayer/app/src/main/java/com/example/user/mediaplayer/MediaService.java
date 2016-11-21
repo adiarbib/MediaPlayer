@@ -1,17 +1,13 @@
 package com.example.user.mediaplayer;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.os.Binder;
 import android.os.IBinder;
-import android.os.PowerManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -23,36 +19,31 @@ public class MediaService extends Service {
     public MediaPlayer mediaPlayer;
     public final static String ACTION_PLAY = "ACTION_PLAY";
     public final static String ACTION_PAUSE = "ACTION_PAUSE";
-    public final static String ACTION_STOP="ACTION_STOP";
-    public final static String ACTION_SKIP_PREV="ACTION_SKIP_PREV";
-    public final static String ACTION_RESUME="ACTION_RESUME";
-    public final static String ACTION_SKIP_NEXT="ACTION_SKIP_NEXT";
-    public final static String ACTION_CHECK_IF_PLAYING="ACTION_CHECK_IF_PLAYING";
-    public final static int NOTIFICATION_ID=1;
-    public static boolean isPlaying=false;
+    public final static String ACTION_STOP = "ACTION_STOP";
+    public final static String ACTION_SKIP_PREV = "ACTION_SKIP_PREV";
+    public final static String ACTION_RESUME = "ACTION_RESUME";
+    public final static String ACTION_SKIP_NEXT = "ACTION_SKIP_NEXT";
+    public final static String ACTION_CHECK_IF_PLAYING = "ACTION_CHECK_IF_PLAYING";
+    public final static int NOTIFICATION_ID = 1;
+    public static boolean isAlive = false;
+    ArrayList<Song> songsList;
+    private int position;
 
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        initNotification(intent);
+        initNotification();
         String action = intent.getAction();
-        int resID = intent.getIntExtra("songID", 0);
+        position=intent.getIntExtra(MainActivity.POSITION_SONG,0);
+
             switch (action) {
 
-                case ACTION_CHECK_IF_PLAYING:
-                    Intent intentBroadcastIsPlaying=new Intent();
-                    intentBroadcastIsPlaying.setAction(ACTION_CHECK_IF_PLAYING);
-                    intentBroadcastIsPlaying.putExtra("isPlaying",mediaPlayer.isPlaying());
-                    sendBroadcast(intentBroadcastIsPlaying);
-                    break;
-
-
                 case ACTION_PLAY:
-                    if (resID == 0) {
+                    if (position<0||position>2) {
                         throw new RuntimeException();}
                     else
                     {
-                        playSong(resID);
+                        playSong(position);
                     }
                     break;
 
@@ -70,36 +61,40 @@ public class MediaService extends Service {
                     break;
 
                 case ACTION_SKIP_NEXT:
-                    if (resID == 0) {
+                    if (position<0||position>2) {
                         throw new RuntimeException();}
                     else
                     {
-                        playSong(resID);
+                        position++;
+                        if(position>2)
+                            position = 0;
+                        playSong(position);
                     }
                     break;
 
                 case ACTION_SKIP_PREV:
-                    resID = intent.getIntExtra("songID", 0);
-                    if (resID==0) {
+                    if (position<0||position>2) {
                         throw new RuntimeException();}
                     else
                     {
-                        playSong(resID);
+                        position--;
+                        if(position<0)
+                            position = 2;
+                        Log.e("entered",position+"");
+                        playSong(position);
                     }
                     break;
 
         }
         return super.onStartCommand(intent, flags, startId);
     }
-    private void initNotification(Intent intent) {
-        int resID=intent.getIntExtra("songID", 0);
+    private void initNotification() {
+
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingNotificationIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
         Intent previousIntent = new Intent(this, MediaService.class);
         previousIntent.setAction(ACTION_SKIP_PREV);
-        //Log.d("song id",resID+"");
-        previousIntent.putExtra("songID",intent.getIntExtra("songID", 0));
         PendingIntent pendingPreviousIntent = PendingIntent.getService(this, 0, previousIntent, 0);
 
         Intent playIntent = new Intent(this, MediaService.class);
@@ -136,7 +131,9 @@ public class MediaService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        mediaPlayer=new MediaPlayer();
+        //mediaPlayer = new MediaPlayer();
+        songsList = new ArrayList<>();
+        setSongsLists();
     }
 
     @Override
@@ -148,21 +145,30 @@ public class MediaService extends Service {
         mediaPlayer=null;
     }
 
-    void playSong(int resID)
+    void playSong(int position)
     {
         if(mediaPlayer.isPlaying())
+        {
             mediaPlayer.stop();
-        mediaPlayer = MediaPlayer.create(this, resID);
+        }
+        mediaPlayer = MediaPlayer.create(this, songsList.get(position).getResId());
         mediaPlayer.start();
-        isPlaying=true;
+        isAlive =true;
     }
 
     void stopSong()
     {
         if(mediaPlayer.isPlaying())
             mediaPlayer.stop();
-        isPlaying=false;
+        isAlive =false;
     }
+
+    private void setSongsLists() {
+        songsList.add(new Song("Falling away with you",R.raw.muse_falling_away_with_you));
+        songsList.add(new Song("Madness",R.raw.muse_madness));
+        songsList.add(new Song("Hysteria",R.raw.muse_hysteria));
+    }
+
 
 
 }

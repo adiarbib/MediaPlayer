@@ -19,7 +19,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         switch (action)
         {
             case MediaService.ACTION_CHECK_IF_PLAYING:
-                isPlaying=intent.getBooleanExtra("isPlaying",isPlaying);
+                isPlaying=intent.getBooleanExtra("isAlive",isPlaying);
                 break;
         }
 
