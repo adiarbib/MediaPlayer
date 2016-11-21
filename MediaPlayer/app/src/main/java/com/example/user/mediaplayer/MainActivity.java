@@ -1,17 +1,9 @@
 package com.example.user.mediaplayer;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.provider.SyncStateContract;
-import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -57,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         playOrPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                isPlayingMethod();
+                /*isPlayingMethod();
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
@@ -67,8 +59,11 @@ public class MainActivity extends AppCompatActivity {
                     resumeSong();
                 } else {
                     pauseSong();
-                }
-
+                }*/
+                if(Integer.parseInt(playOrPause.getTag().toString()) == R.drawable.pause)
+                    pauseSong();
+                else
+                    resumeSong();
             }
         });
 
@@ -190,7 +185,10 @@ public class MainActivity extends AppCompatActivity {
         startService(intent);
         playOrPause.setImageResource(R.drawable.pause);
         playOrPause.setTag(R.drawable.pause);
+
     }
+
+
 
 
 }

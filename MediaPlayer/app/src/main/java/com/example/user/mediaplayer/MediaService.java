@@ -7,10 +7,16 @@ import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Binder;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
+
+import java.util.ArrayList;
 
 public class MediaService extends Service {
 
@@ -24,6 +30,7 @@ public class MediaService extends Service {
     public final static String ACTION_CHECK_IF_PLAYING="ACTION_CHECK_IF_PLAYING";
     public final static int NOTIFICATION_ID=1;
     public static boolean isPlaying=false;
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -72,7 +79,8 @@ public class MediaService extends Service {
                     break;
 
                 case ACTION_SKIP_PREV:
-                    if (resID == 0) {
+                    resID = intent.getIntExtra("songID", 0);
+                    if (resID==0) {
                         throw new RuntimeException();}
                     else
                     {
@@ -83,15 +91,14 @@ public class MediaService extends Service {
         }
         return super.onStartCommand(intent, flags, startId);
     }
-
     private void initNotification(Intent intent) {
-
+        int resID=intent.getIntExtra("songID", 0);
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingNotificationIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
         Intent previousIntent = new Intent(this, MediaService.class);
         previousIntent.setAction(ACTION_SKIP_PREV);
-        //Log.d("song id",intent.getIntExtra("songID", 0));
+        //Log.d("song id",resID+"");
         previousIntent.putExtra("songID",intent.getIntExtra("songID", 0));
         PendingIntent pendingPreviousIntent = PendingIntent.getService(this, 0, previousIntent, 0);
 
@@ -130,7 +137,6 @@ public class MediaService extends Service {
     public void onCreate() {
         super.onCreate();
         mediaPlayer=new MediaPlayer();
-
     }
 
     @Override
@@ -157,7 +163,6 @@ public class MediaService extends Service {
             mediaPlayer.stop();
         isPlaying=false;
     }
-
 
 
 }
