@@ -34,7 +34,7 @@ public class MediaService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         initNotification();
         String action = intent.getAction();
-        position=intent.getIntExtra(MainActivity.POSITION_SONG,0);
+        position=intent.getIntExtra(MainActivity.POSITION_SONG,position);
 
             switch (action) {
 
@@ -80,7 +80,6 @@ public class MediaService extends Service {
                         position--;
                         if(position<0)
                             position = 2;
-                        Log.e("entered",position+"");
                         playSong(position);
                     }
                     break;
@@ -98,7 +97,10 @@ public class MediaService extends Service {
         PendingIntent pendingPreviousIntent = PendingIntent.getService(this, 0, previousIntent, 0);
 
         Intent playIntent = new Intent(this, MediaService.class);
-        playIntent.setAction(ACTION_RESUME);
+        if(mediaPlayer.isPlaying())
+            playIntent.setAction(ACTION_PAUSE);
+        else
+            playIntent.setAction(ACTION_RESUME);
         PendingIntent pendingPlayIntent = PendingIntent.getService(this, 0, playIntent, 0);
 
         Intent nextIntent = new Intent(this, MediaService.class);
@@ -114,9 +116,9 @@ public class MediaService extends Service {
                 .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
                 .setContentIntent(pendingNotificationIntent)
                 .setOngoing(true)
-                .addAction(R.drawable.back, "Previous", pendingPreviousIntent)
-                .addAction(R.drawable.play, "Play", pendingPlayIntent)
-                .addAction(R.drawable.forward, "Next", pendingNextIntent)
+                .addAction(R.drawable.back, "", pendingPreviousIntent)
+                .addAction(R.drawable.ic_play_pause_black_24dp, "", pendingPlayIntent)
+                .addAction(R.drawable.forward, "", pendingNextIntent)
                 .build();
 
         startForeground(NOTIFICATION_ID, notification);
@@ -131,8 +133,8 @@ public class MediaService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        //mediaPlayer = new MediaPlayer();
         songsList = new ArrayList<>();
+        mediaPlayer=new MediaPlayer();
         setSongsLists();
     }
 

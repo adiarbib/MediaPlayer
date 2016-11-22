@@ -19,17 +19,12 @@ public class MainActivity extends AppCompatActivity {
     ImageButton playOrPause;
     ImageButton forawrd;
     ImageButton backward;
-    int currentSongPosition;
-    //MyBroadcastReceiver myBroadcastReceiver;
-    //IntentFilter intentFilter;
     public static String POSITION_SONG ="positionSong";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        currentSongPosition=0;
 
         songsList = (ListView) findViewById(R.id.songsList);
         playOrPause = (ImageButton) findViewById(R.id.playOrPause);
