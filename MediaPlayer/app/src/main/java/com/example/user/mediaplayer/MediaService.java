@@ -1,8 +1,10 @@
 package com.example.user.mediaplayer;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,7 +18,7 @@ import java.util.ArrayList;
 
 public class MediaService extends Service {
 
-    public MediaPlayer mediaPlayer;
+
     public final static String ACTION_PLAY = "ACTION_PLAY";
     public final static String ACTION_PAUSE = "ACTION_PAUSE";
     public final static String ACTION_STOP = "ACTION_STOP";
@@ -25,6 +27,8 @@ public class MediaService extends Service {
     public final static String ACTION_SKIP_NEXT = "ACTION_SKIP_NEXT";
     public final static String ACTION_CHECK_IF_PLAYING = "ACTION_CHECK_IF_PLAYING";
     public final static int NOTIFICATION_ID = 1;
+
+    public MediaPlayer mediaPlayer;
     public static boolean isAlive = false;
     ArrayList<Song> songsList;
     private int position;
@@ -32,10 +36,8 @@ public class MediaService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        initNotification();
         String action = intent.getAction();
         position=intent.getIntExtra(MainActivity.POSITION_SONG,position);
-
             switch (action) {
 
                 case ACTION_PLAY:
@@ -44,12 +46,14 @@ public class MediaService extends Service {
                     else
                     {
                         playSong(position);
+                        initNotification();
                     }
                     break;
 
                 case ACTION_PAUSE:
                     if(mediaPlayer.isPlaying())
                         mediaPlayer.pause();
+                    initNotification();
                     break;
 
                 case ACTION_STOP:
@@ -69,6 +73,7 @@ public class MediaService extends Service {
                         if(position>2)
                             position = 0;
                         playSong(position);
+                        initNotification();
                     }
                     break;
 
@@ -81,6 +86,7 @@ public class MediaService extends Service {
                         if(position<0)
                             position = 2;
                         playSong(position);
+                        initNotification();
                     }
                     break;
 
@@ -110,7 +116,7 @@ public class MediaService extends Service {
         Bitmap icon = BitmapFactory.decodeResource(getResources(), R.drawable.icon);
 
         Notification notification = new NotificationCompat.Builder(this)
-                .setContentTitle("Music Player")
+                .setContentTitle(/*"Music Player"*/songsList.get(position).getName())
                 .setContentText("Music")
                 .setSmallIcon(R.drawable.icon)
                 .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
