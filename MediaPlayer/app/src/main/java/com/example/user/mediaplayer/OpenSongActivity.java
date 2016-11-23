@@ -5,6 +5,8 @@ import android.content.IntentFilter;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -19,7 +21,8 @@ public class OpenSongActivity extends AppCompatActivity {
     private TextView songName;
     ImageButton play;
     ImageButton pause;
-    File file;
+    TelephonyManager tManager;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +54,9 @@ public class OpenSongActivity extends AppCompatActivity {
             }
         });
 
-
+        tManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        tManager.listen(new CustomPhoneStateListener(this),
+                PhoneStateListener.LISTEN_CALL_STATE);
     }
 
     private void playSong() {

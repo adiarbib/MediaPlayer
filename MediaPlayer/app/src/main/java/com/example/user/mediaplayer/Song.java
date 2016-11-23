@@ -1,12 +1,12 @@
 package com.example.user.mediaplayer;
 
 import android.content.res.Resources;
+import android.media.MediaMetadataRetriever;
 
 import java.io.Serializable;
 
 public class Song implements Serializable
 {
-
     private String name;
     private int resId;
 

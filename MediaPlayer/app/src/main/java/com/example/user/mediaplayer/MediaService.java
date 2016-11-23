@@ -11,14 +11,11 @@ import android.net.Uri;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
-
-import java.io.File;
 import java.util.ArrayList;
 
 public class MediaService extends Service {
 
-
+    //list actions
     public final static String ACTION_PLAY = "ACTION_PLAY";
     public final static String ACTION_PAUSE = "ACTION_PAUSE";
     public final static String ACTION_STOP = "ACTION_STOP";
@@ -26,8 +23,13 @@ public class MediaService extends Service {
     public final static String ACTION_RESUME = "ACTION_RESUME";
     public final static String ACTION_SKIP_NEXT = "ACTION_SKIP_NEXT";
 
+    //file actions
     public final static String ACTION_PLAY_FILE="ACTION_PLAY_FILE";
     public final static String ACTION_PAUSE_FILE="ACTION_PAUSE_FILE";
+
+    //phone actions
+    public final static String ACTION_STATE_PAUSE="ACTION_STATE_PAUSE";
+    public final static String ACTION_STATE_PLAY="ACTION_STATE_PLAY";
 
     public final static int NOTIFICATION_ID = 1;
 
@@ -54,7 +56,22 @@ public class MediaService extends Service {
                         mediaPlayer.pause();
                     break;
             }
+        }
 
+        else if(action==ACTION_STATE_PAUSE||action==ACTION_STATE_PAUSE)
+        {
+            switch (action)
+            {
+                case ACTION_STATE_PAUSE:
+                    if(mediaPlayer.isPlaying())
+                        mediaPlayer.pause();
+                    break;
+
+                case ACTION_STATE_PLAY:
+                    if(isAlive)
+                        mediaPlayer.start();
+                    break;
+            }
         }
 
         else{
@@ -189,13 +206,12 @@ public class MediaService extends Service {
 
     void playFileSong(Uri uri)
     {
-        if(mediaPlayer == null)
-            mediaPlayer = MediaPlayer.create(this, uri);
-        else{
+        if(mediaPlayer != null){
             mediaPlayer.release();
-            mediaPlayer = MediaPlayer.create(this, uri);
         }
+        mediaPlayer = MediaPlayer.create(this, uri);
         mediaPlayer.start();
+        isAlive=true;
     }
 
     void stopSong()

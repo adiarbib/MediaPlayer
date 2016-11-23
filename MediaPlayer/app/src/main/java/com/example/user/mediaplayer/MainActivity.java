@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -20,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     ImageButton forawrd;
     ImageButton backward;
     public static String POSITION_SONG ="positionSong";
+    TelephonyManager tManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         playOrPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(Integer.parseInt(playOrPause.getTag().toString()) == R.drawable.pause)
+                if (Integer.parseInt(playOrPause.getTag().toString()) == R.drawable.pause)
                     pauseSong();
                 else
                     resumeSong();
@@ -75,11 +78,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        tManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        tManager.listen(new CustomPhoneStateListener(this),
+                PhoneStateListener.LISTEN_CALL_STATE);
 
     }
-
-
-
 
     @Override
     protected void onStart() {
