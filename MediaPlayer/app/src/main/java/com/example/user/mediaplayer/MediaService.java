@@ -1,19 +1,19 @@
 package com.example.user.mediaplayer;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class MediaService extends Service {
@@ -25,7 +25,10 @@ public class MediaService extends Service {
     public final static String ACTION_SKIP_PREV = "ACTION_SKIP_PREV";
     public final static String ACTION_RESUME = "ACTION_RESUME";
     public final static String ACTION_SKIP_NEXT = "ACTION_SKIP_NEXT";
-    public final static String ACTION_CHECK_IF_PLAYING = "ACTION_CHECK_IF_PLAYING";
+
+    public final static String ACTION_PLAY_FILE="ACTION_PLAY_FILE";
+    public final static String ACTION_PAUSE_FILE="ACTION_PAUSE_FILE";
+
     public final static int NOTIFICATION_ID = 1;
 
     public MediaPlayer mediaPlayer;
@@ -37,7 +40,26 @@ public class MediaService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent.getAction();
-        position=intent.getIntExtra(MainActivity.POSITION_SONG,position);
+        if(action==ACTION_PLAY_FILE||action==ACTION_PAUSE_FILE) {
+            Uri uri = intent.getParcelableExtra("uri");
+
+            switch (action){
+
+                case ACTION_PLAY_FILE:
+                    playFileSong(uri);
+                    break;
+
+                case ACTION_PAUSE_FILE:
+                    if(mediaPlayer.isPlaying())
+                        mediaPlayer.pause();
+                    break;
+            }
+
+        }
+
+        else{
+            position=intent.getIntExtra(MainActivity.POSITION_SONG,position);
+
             switch (action) {
 
                 case ACTION_PLAY:
@@ -45,15 +67,15 @@ public class MediaService extends Service {
                         throw new RuntimeException();}
                     else
                     {
-                        playSong(position);
                         initNotification();
+                        playSong(position);
                     }
                     break;
 
                 case ACTION_PAUSE:
+                    initNotification();
                     if(mediaPlayer.isPlaying())
                         mediaPlayer.pause();
-                    initNotification();
                     break;
 
                 case ACTION_STOP:
@@ -89,6 +111,7 @@ public class MediaService extends Service {
                         initNotification();
                     }
                     break;
+            }
 
         }
         return super.onStartCommand(intent, flags, startId);
@@ -116,7 +139,7 @@ public class MediaService extends Service {
         Bitmap icon = BitmapFactory.decodeResource(getResources(), R.drawable.icon);
 
         Notification notification = new NotificationCompat.Builder(this)
-                .setContentTitle(/*"Music Player"*/songsList.get(position).getName())
+                .setContentTitle(songsList.get(position).getName())
                 .setContentText("Music")
                 .setSmallIcon(R.drawable.icon)
                 .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
@@ -162,6 +185,17 @@ public class MediaService extends Service {
         mediaPlayer = MediaPlayer.create(this, songsList.get(position).getResId());
         mediaPlayer.start();
         isAlive =true;
+    }
+
+    void playFileSong(Uri uri)
+    {
+        if(mediaPlayer == null)
+            mediaPlayer = MediaPlayer.create(this, uri);
+        else{
+            mediaPlayer.release();
+            mediaPlayer = MediaPlayer.create(this, uri);
+        }
+        mediaPlayer.start();
     }
 
     void stopSong()

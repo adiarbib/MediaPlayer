@@ -6,17 +6,14 @@ import java.io.Serializable;
 
 public class Song implements Serializable
 {
-    private final String ANDROID_RESOURCE_PATH="android.resource://com.example.user.mediaplayer/raw/";
 
     private String name;
     private int resId;
-    private String uriString;
 
 
     public Song(String name, int resID) {
         this.name = name;
         this.resId=resID;
-        this.uriString=ANDROID_RESOURCE_PATH+ Resources.getSystem().getResourceEntryName(resID);
     }
 
     public String getName() {
